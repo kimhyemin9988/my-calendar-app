@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import {
   Calendar as BigCalendar,
   dateFnsLocalizer,
-  Event as CalendarEvent,
   Views,
   SlotInfo,
 } from 'react-big-calendar';
@@ -16,8 +15,11 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { setSelectedDate } from '../../redux/calendarSlice';
-import { openModal } from '../../redux/modalSlice';
+import { openModal, openModalWithEvent, setEditingEventId, setSlotInfo, setTitle } from '../../redux/modalSlice';
 import EventModal from '../Modal/EventModal';
+import { MyCalendarEvent } from '../../redux/calendarSlice';
+
+
 
 const locales = {
   'en-US': require('date-fns/locale/en-US'),
@@ -44,13 +46,35 @@ const BigCalendarComponent = () => {
 
   const defaultView = Views.WEEK;
 
-  const calendarEvents: CalendarEvent[] = useMemo(() => {
-    return events.map((event) => ({
-      ...event,
-      start: new Date(event.start),
-      end: new Date(event.end),
-    }));
-  }, [events]);
+  const calendarEvents: MyCalendarEvent[] = useMemo(() => {
+  return events.map((event) => ({
+    ...event,
+    start: new Date(event.start),
+    end: new Date(event.end),
+  }));
+}, [events]);
+
+
+  const handleSelectEvent = (event: MyCalendarEvent) => {
+      if (!event.start || !event.end || !event.title || !event.id) {
+        // start, end, title이 없으면 처리 중단
+        return;
+      }
+    const titleStr = typeof event.title === 'string' ? event.title : '';
+
+    dispatch(setSelectedDate(event.start));
+    dispatch(setTitle(titleStr));
+    dispatch(setSlotInfo({ start: event.start, end: event.end }));
+    dispatch(setEditingEventId(event.id)); // 편집 중인 이벤트 아이디 설정
+    dispatch(
+    openModalWithEvent({
+      slotInfo: { start: event.start, end: event.end },
+      title: titleStr,
+      id: event.id,
+      mode: 'view',
+    })
+  );
+  };
 
   return (
     <>
@@ -66,6 +90,7 @@ const BigCalendarComponent = () => {
           defaultView={defaultView}
           date={new Date(selectedDate)}
           onNavigate={(date) => dispatch(setSelectedDate(date))}
+          onSelectEvent={handleSelectEvent}
         />
       </div>
       {/* 모달 컴포넌트 포함 */}

@@ -5,7 +5,7 @@ import modalReducer from './redux/modalSlice';
 const store = configureStore({
 reducer: {
     calendar: calendarReducer,
-    modal: modalReducer, // ✅ 이 줄 추가!
+    modal: modalReducer, // 
   },
 });
 
