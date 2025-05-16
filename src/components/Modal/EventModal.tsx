@@ -36,8 +36,8 @@ const EventModal = () => {
         addEvent({
           id: Math.random().toString(36).substr(2, 9),
           title: localTitle,
-          start: slotInfo.start,
-          end: slotInfo.end,
+          start: slotInfo.start, // 이미 ISO string
+          end: slotInfo.end // 이미 ISO string
         })
       );
       handleClose();
@@ -93,4 +93,5 @@ const EventModal = () => {
 };
 
 export default EventModal;
+
 

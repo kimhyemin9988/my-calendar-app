@@ -14,12 +14,15 @@ import {
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { setSelectedDate } from '../../redux/calendarSlice';
-import { openModal, openModalWithEvent, setEditingEventId, setSlotInfo, setTitle } from '../../redux/modalSlice';
+import { setSelectedDate, convertToMyCalendarEvents } from '../../redux/calendarSlice';
+import {
+  openModal,
+  openModalWithEvent,
+  setEditingEventId,
+  setSlotInfo,
+  setTitle,
+} from '../../redux/modalSlice';
 import EventModal from '../Modal/EventModal';
-import { MyCalendarEvent } from '../../redux/calendarSlice';
-
-
 
 const locales = {
   'en-US': require('date-fns/locale/en-US'),
@@ -38,42 +41,49 @@ const BigCalendarComponent = () => {
   const dispatch = useDispatch();
   const { selectedDate, events } = useSelector((state: RootState) => state.calendar);
 
-  // onSelectSlot 함수에서 slotInfo를 그대로 openModal에 넘김
+  // 이벤트 변환: StoredCalendarEvent[] → MyCalendarEvent[]
+  const calendarEvents = useMemo(() => {
+    return convertToMyCalendarEvents(events);
+  }, [events]);
+
   const handleSelectSlot = (slotInfo: SlotInfo) => {
-    dispatch(setSelectedDate(slotInfo.start));
-    dispatch(openModal({ start: slotInfo.start, end: slotInfo.end }));
+    dispatch(setSelectedDate(slotInfo.start.toISOString())); // string으로 저장
+    dispatch(
+      openModal({
+        start: slotInfo.start.toISOString(), // string으로 저장
+        end: slotInfo.end.toISOString(),
+      })
+    );
   };
 
   const defaultView = Views.WEEK;
 
-  const calendarEvents: MyCalendarEvent[] = useMemo(() => {
-  return events.map((event) => ({
-    ...event,
-    start: new Date(event.start),
-    end: new Date(event.end),
-  }));
-}, [events]);
+  const handleSelectEvent = (event: any) => {
+    // event는 MyCalendarEvent (start, end는 Date)
+    if (!event.start || !event.end || !event.title || !event.id) return;
 
-
-  const handleSelectEvent = (event: MyCalendarEvent) => {
-      if (!event.start || !event.end || !event.title || !event.id) {
-        // start, end, title이 없으면 처리 중단
-        return;
-      }
     const titleStr = typeof event.title === 'string' ? event.title : '';
 
-    dispatch(setSelectedDate(event.start));
+    dispatch(setSelectedDate(event.start.toISOString()));
     dispatch(setTitle(titleStr));
-    dispatch(setSlotInfo({ start: event.start, end: event.end }));
-    dispatch(setEditingEventId(event.id)); // 편집 중인 이벤트 아이디 설정
     dispatch(
-    openModalWithEvent({
-      slotInfo: { start: event.start, end: event.end },
-      title: titleStr,
-      id: event.id,
-      mode: 'view',
-    })
-  );
+      setSlotInfo({
+        start: event.start.toISOString(), // string으로 변환
+        end: event.end.toISOString(),
+      })
+    );
+    dispatch(setEditingEventId(event.id));
+    dispatch(
+      openModalWithEvent({
+        slotInfo: {
+          start: event.start.toISOString(), // string으로 저장
+          end: event.end.toISOString(),
+        },
+        title: titleStr,
+        id: event.id,
+        mode: 'view',
+      })
+    );
   };
 
   return (
@@ -81,19 +91,18 @@ const BigCalendarComponent = () => {
       <div style={{ height: '80vh' }}>
         <BigCalendar
           localizer={localizer}
-          events={calendarEvents}
+          events={calendarEvents} // Date 객체 기반으로 렌더링
           startAccessor="start"
           endAccessor="end"
           selectable
           onSelectSlot={handleSelectSlot}
           views={{ week: true }}
           defaultView={defaultView}
-          date={new Date(selectedDate)}
-          onNavigate={(date) => dispatch(setSelectedDate(date))}
+          date={new Date(selectedDate)} // string → Date
+          onNavigate={(date) => dispatch(setSelectedDate(date.toISOString()))}
           onSelectEvent={handleSelectEvent}
         />
       </div>
-      {/* 모달 컴포넌트 포함 */}
       <EventModal />
     </>
   );

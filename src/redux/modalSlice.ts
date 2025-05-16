@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface SlotInfo {
-  start: Date;
-  end: Date;
+  start: string; // Date → string (ISO format) // 수정: 날짜 타입을 string으로 통일
+  end: string;   // Date → string (ISO format) // 수정: 날짜 타입을 string으로 통일
 }
 
 type ModalMode = 'edit' | 'view';
@@ -29,10 +29,14 @@ const modalSlice = createSlice({
   reducers: {
     openModal: (
       state,
-      action: PayloadAction<{ start: Date; end: Date; mode?: ModalMode }>
+      action: PayloadAction<{ start: string; end: string; mode?: ModalMode }>
+      // { start: Date; end: Date } → { start: string; end: string }로 변경 // 수정
     ) => {
       state.isOpen = true;
-      state.slotInfo = { start: action.payload.start, end: action.payload.end };
+      state.slotInfo = {
+        start: action.payload.start,
+        end: action.payload.end,
+      };
       state.editingEventId = null;
       state.mode = action.payload.mode || 'edit';
     },
@@ -63,6 +67,7 @@ const modalSlice = createSlice({
         id: string;
         mode?: ModalMode;
       }>
+      // start, end가 string 타입인 slotInfo로 변경 // 수정
     ) => {
       state.isOpen = true;
       state.slotInfo = action.payload.slotInfo;
@@ -84,3 +89,4 @@ export const {
 } = modalSlice.actions;
 
 export default modalSlice.reducer;
+
