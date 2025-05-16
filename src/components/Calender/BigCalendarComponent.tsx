@@ -107,7 +107,9 @@ const BigCalendarComponent = () => {
           defaultView={defaultView} // 주간 보기 default
           date={new Date(selectedDate)} // string → Date
           onNavigate={(date) => dispatch(setSelectedDate(date.toISOString()))}
+          //사용자가 주간 날짜를 이동함 ->	이동한 날짜를 상태에 저장(string)
           onSelectEvent={handleSelectEvent}
+          //사용자가 기존 일정을 클릭
         />
       </div>
       <EventModal />
