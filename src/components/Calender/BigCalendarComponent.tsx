@@ -3,7 +3,8 @@ import {
   Calendar as BigCalendar,
   dateFnsLocalizer,
   Views,
-  SlotInfo,
+  SlotInfo, // 컴포넌트 이벤트는 modalSlice의 SlotInfo 사용(x)
+  // react-big-calendar의 SlotInfo 사용
 } from 'react-big-calendar';
 import {
   format,
@@ -14,7 +15,7 @@ import {
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { setSelectedDate, convertToMyCalendarEvents } from '../../redux/calendarSlice';
+import { setSelectedDate, convertToMyCalendarEvents, MyCalendarEvent } from '../../redux/calendarSlice';
 import {
   openModal,
   openModalWithEvent,
@@ -48,9 +49,13 @@ const BigCalendarComponent = () => {
   }, [events]);
 
   const handleSelectSlot = (slotInfo: SlotInfo) => {
+    // 캘린더 셀 클릭
+    // slotInfo -> start , end
+    // react-big-calendar의 SlotInfo 사용한 뒤 redux는 string으로 저장
     dispatch(setSelectedDate(slotInfo.start.toISOString())); // string으로 저장
     dispatch(
       openModal({
+        // 기본 생성 모드
         start: slotInfo.start.toISOString(), // string으로 저장
         end: slotInfo.end.toISOString(),
       })
@@ -58,18 +63,19 @@ const BigCalendarComponent = () => {
   };
 
   const defaultView = Views.WEEK;
+  //react-big-calendar의 주간 보기
 
-  const handleSelectEvent = (event: any) => {
-    // event는 MyCalendarEvent (start, end는 Date)
+  const handleSelectEvent = (event: MyCalendarEvent) => {
+    // MyCalendarEvent (start, end는 Date)
     if (!event.start || !event.end || !event.title || !event.id) return;
 
     const titleStr = typeof event.title === 'string' ? event.title : '';
 
     dispatch(setSelectedDate(event.start.toISOString()));
-    dispatch(setTitle(titleStr));
+    dispatch(setTitle(titleStr)); 
     dispatch(
       setSlotInfo({
-        start: event.start.toISOString(), // string으로 변환
+        start: event.start.toISOString(), // Date -> string으로 변환
         end: event.end.toISOString(),
       })
     );
@@ -96,9 +102,9 @@ const BigCalendarComponent = () => {
           startAccessor="start"
           endAccessor="end"
           selectable
-          onSelectSlot={handleSelectSlot}
+          onSelectSlot={handleSelectSlot} // 캘린더 셀 클릭
           views={{ week: true }}
-          defaultView={defaultView}
+          defaultView={defaultView} // 주간 보기 default
           date={new Date(selectedDate)} // string → Date
           onNavigate={(date) => dispatch(setSelectedDate(date.toISOString()))}
           onSelectEvent={handleSelectEvent}

@@ -14,10 +14,18 @@ const EventModal = () => {
   const dispatch = useDispatch();
 
   const isOpen = useSelector((state: RootState) => state.modal.isOpen);
+  //모달이 열려 있는지 여부 
   const title = useSelector((state: RootState) => state.modal.title);
+  //모달 창에서 사용자가 입력 중인 일정 제목(title)
   const slotInfo = useSelector((state: RootState) => state.modal.slotInfo);
+  //react-big-calendar에서 클릭한 시간 (시작/종료 시간)
   const editingEventId = useSelector((state: RootState) => state.modal.editingEventId);
+  //생성 중인 일정의 ID => 셀을 클릭한 생성 모드 모달의 id
   const mode = useSelector((state: RootState) => state.modal.mode);
+  //모달이 생성 모드인지 보기 모드인지 구분
+
+
+
 
   const [localTitle, setLocalTitle] = useState(title || '');
   const [startTime, setStartTime] = useState('');
@@ -38,6 +46,7 @@ const EventModal = () => {
 
   const handleClose = () => {
     dispatch(closeModal());
+    // closeModal 실행
   };
 
   const handleSave = () => {
@@ -61,7 +70,7 @@ const EventModal = () => {
 
       dispatch(
         addEvent({
-          id: Math.random().toString(36).substr(2, 9),
+          id: Math.random().toString(36), // id 랜덤 생성
           title: localTitle,
           start: start.toISOString(),
           end: end.toISOString(),
@@ -98,6 +107,7 @@ const EventModal = () => {
       className={styles.content}
     >
       {mode === 'edit' ? (
+      //생성
         <>
           <input
             type="text"
@@ -130,7 +140,7 @@ const EventModal = () => {
             <button onClick={handleClose}>취소</button>
           </div>
         </>
-      ) : (
+      ) : (          //보기 + 삭제
         <>
           <p>할일: {title}</p>
           <div className={styles.buttonGroup}>
