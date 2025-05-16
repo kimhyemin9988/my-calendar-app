@@ -23,6 +23,7 @@ import {
   setTitle,
 } from '../../redux/modalSlice';
 import EventModal from '../Modal/EventModal';
+import styles from './Calendar.module.scss';
 
 const locales = {
   'en-US': require('date-fns/locale/en-US'),
@@ -88,7 +89,7 @@ const BigCalendarComponent = () => {
 
   return (
     <>
-      <div style={{ height: '80vh' }}>
+      <div className={ styles.CalendarLayout }>
         <BigCalendar
           localizer={localizer}
           events={calendarEvents} // Date 객체 기반으로 렌더링

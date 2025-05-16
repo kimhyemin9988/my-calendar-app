@@ -10,6 +10,7 @@ import {
   setEditingEventId,
 } from '../../redux/modalSlice';
 import { addEvent, deleteEvent } from '../../redux/calendarSlice';
+import styles from './Modal.module.scss';
 
 const EventModal = () => {
   const dispatch = useDispatch();
@@ -58,35 +59,36 @@ const EventModal = () => {
   };
 
   return (
-    <Modal isOpen={isOpen} onRequestClose={handleClose} ariaHideApp={false}>
-      <h2>{mode === 'edit' ? '할일 입력' : '할일 보기'}</h2>
-
-      {slotInfo && (
-        <div>
-          <p>
-            날짜: {moment(slotInfo.start).format('YYYY-MM-DD')} <br />
-            시간: {moment(slotInfo.start).format('HH:mm')} ~ {moment(slotInfo.end).format('HH:mm')}
-          </p>
-        </div>
-      )}
-
+    <Modal isOpen={isOpen} onRequestClose={handleClose} ariaHideApp={false}
+        overlayClassName={styles.overlay}
+        className={styles.content}>
       {mode === 'edit' ? (
         <>
           <input
             type="text"
-            placeholder="할일 제목"
+            placeholder="제목 추가"
             value={localTitle}
             onChange={handleTitleChange}
           />
-          <button onClick={handleSave}>저장</button>
-          <button onClick={handleClose}>취소</button>
+          <div>
+            <button onClick={handleSave}>저장</button>
+            <button onClick={handleClose}>취소</button>
+          </div>
         </>
       ) : (
         <>
           <p>할일: {title}</p>
-          <button onClick={handleDelete}>삭제</button>
-          <button onClick={handleClose}>닫기</button>
+          <div>
+            <button onClick={handleDelete}>삭제</button>
+            <button onClick={handleClose}>닫기</button>
+          </div>
         </>
+      )}
+            {slotInfo && (
+        <div className={styles.dateTimeLayout}>
+          <div>{moment(slotInfo.start).format('YYYY-MM-DD')}</div>
+          <div>{moment(slotInfo.start).format('HH:mm')} ~ {moment(slotInfo.end).format('HH:mm')}</div>
+        </div>
       )}
     </Modal>
   );

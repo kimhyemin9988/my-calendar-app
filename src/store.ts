@@ -5,7 +5,7 @@ import modalReducer from './redux/modalSlice';
 const store = configureStore({
 reducer: {
     calendar: calendarReducer,
-    modal: modalReducer, // 
+    modal: modalReducer,
   },
 });
 

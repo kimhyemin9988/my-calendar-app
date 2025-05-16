@@ -20,6 +20,9 @@ const CustomDayPicker = () => {
 
   return (
     <DayPicker
+      classNames={{
+        day_selected: styles.selectedDate
+      }}
       mode="single"
       selected={selectedDate ? new Date(selectedDate) : undefined} // string → Date 변환 // 수정
       defaultMonth={new Date()}
@@ -27,9 +30,6 @@ const CustomDayPicker = () => {
       onMonthChange={setMonth} // 네비게이션(이전/다음달) 클릭 시 월 변경 처리
       onSelect={(date) => {
         if (date) dispatch(setSelectedDate(date.toISOString())); // Date → string 변환 // 수정
-      }}
-      classNames={{
-        day_selected: styles.selectedDate,
       }}
     />
   );
