@@ -6,8 +6,6 @@ import { RootState } from '../../store';
 import {
   closeModal,
   setTitle,
-  setSlotInfo,
-  setEditingEventId,
 } from '../../redux/modalSlice';
 import { addEvent, deleteEvent } from '../../redux/calendarSlice';
 import styles from './Modal.module.scss';
@@ -22,10 +20,21 @@ const EventModal = () => {
   const mode = useSelector((state: RootState) => state.modal.mode);
 
   const [localTitle, setLocalTitle] = useState(title || '');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
 
   useEffect(() => {
     setLocalTitle(title || '');
   }, [title]);
+
+  useEffect(() => {
+    if (slotInfo) {
+      const start = moment(slotInfo.start).format('HH:mm');
+      const end = moment(slotInfo.end).format('HH:mm');
+      setStartTime(start);
+      setEndTime(end);
+    }
+  }, [slotInfo]);
 
   const handleClose = () => {
     dispatch(closeModal());
@@ -33,12 +42,29 @@ const EventModal = () => {
 
   const handleSave = () => {
     if (slotInfo && localTitle.trim()) {
+      // 시작, 종료 moment 객체 생성 (날짜는 slotInfo 기준, 시간은 입력값 기준)
+      const start = moment(slotInfo.start).set({
+        hour: parseInt(startTime.split(':')[0]),
+        minute: parseInt(startTime.split(':')[1]),
+      });
+
+      const end = moment(slotInfo.end).set({
+        hour: parseInt(endTime.split(':')[0]),
+        minute: parseInt(endTime.split(':')[1]),
+      });
+
+      // 종료시간이 시작시간보다 이전이면 경고
+      if (end.isSameOrBefore(start)) {
+        alert('시작 시간보다 전의 시간을 입력할 수 없습니다.');
+        return;
+      }
+
       dispatch(
         addEvent({
           id: Math.random().toString(36).substr(2, 9),
           title: localTitle,
-          start: slotInfo.start, // 이미 ISO string
-          end: slotInfo.end // 이미 ISO string
+          start: start.toISOString(),
+          end: end.toISOString(),
         })
       );
       handleClose();
@@ -58,10 +84,19 @@ const EventModal = () => {
     dispatch(setTitle(e.target.value));
   };
 
+  // 종료 시간 입력
+  const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEndTime(e.target.value);
+  };
+
   return (
-    <Modal isOpen={isOpen} onRequestClose={handleClose} ariaHideApp={false}
-        overlayClassName={styles.overlay}
-        className={styles.content}>
+    <Modal
+      isOpen={isOpen}
+      onRequestClose={handleClose}
+      ariaHideApp={false}
+      overlayClassName={styles.overlay}
+      className={styles.content}
+    >
       {mode === 'edit' ? (
         <>
           <input
@@ -70,7 +105,27 @@ const EventModal = () => {
             value={localTitle}
             onChange={handleTitleChange}
           />
-          <div>
+
+          <div className={styles.timeInputs}>
+            <label>
+              시작 시간
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+              />
+            </label>
+            <label>
+              종료 시간
+              <input
+                type="time"
+                value={endTime}
+                onChange={handleEndTimeChange}
+              />
+            </label>
+          </div>
+
+          <div className={styles.buttonGroup}>
             <button onClick={handleSave}>저장</button>
             <button onClick={handleClose}>취소</button>
           </div>
@@ -78,16 +133,19 @@ const EventModal = () => {
       ) : (
         <>
           <p>할일: {title}</p>
-          <div>
+          <div className={styles.buttonGroup}>
             <button onClick={handleDelete}>삭제</button>
             <button onClick={handleClose}>닫기</button>
           </div>
         </>
       )}
-            {slotInfo && (
+
+      {slotInfo && (
         <div className={styles.dateTimeLayout}>
           <div>{moment(slotInfo.start).format('YYYY-MM-DD')}</div>
-          <div>{moment(slotInfo.start).format('HH:mm')} ~ {moment(slotInfo.end).format('HH:mm')}</div>
+          <div>
+            {startTime} ~ {endTime}
+          </div>
         </div>
       )}
     </Modal>
@@ -95,5 +153,4 @@ const EventModal = () => {
 };
 
 export default EventModal;
-
 

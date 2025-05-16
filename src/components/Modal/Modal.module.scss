@@ -57,6 +57,11 @@
   transition: background-color 0.2s ease;
 }
 
+.content label input {
+  margin: 10px;
+  width: 130px;
+}
+
 .content button:first-of-type {
   background-color: #1a73e8;
   color: white;
